@@ -521,19 +521,28 @@ function adjustTime(time) {
     return `${adj.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
-function decodeUrl(raw) {
-    if (!raw) return '#';
+function getUrlAndB64(raw) {
+    // Returns { decoded, b64 } where b64 is always a base64 we can pass to eventos.html
+    if (!raw) return { decoded: '#', b64: null };
     try {
-        // try as iframe src with ?r= param
         const u = new URL(raw, 'https://example.com');
         const r = u.searchParams.get('r');
-        if (r) return atob(r);
+        if (r) {
+            // Already has ?r=base64 — perfect, use r directly
+            const decoded = atob(r);
+            return { decoded, b64: r };
+        }
     } catch {}
-    // maybe already a direct url
-    if (raw.startsWith('http')) return raw;
-    // maybe base64
-    try { const d = atob(raw); if (d.startsWith('http')) return d; } catch {}
-    return raw;
+    // Direct http URL — encode it ourselves
+    if (raw.startsWith('http')) {
+        return { decoded: raw, b64: btoa(raw) };
+    }
+    // Maybe already raw base64
+    try {
+        const d = atob(raw);
+        if (d.startsWith('http')) return { decoded: d, b64: raw };
+    } catch {}
+    return { decoded: raw, b64: btoa(raw) };
 }
 
 function parseMatches(data, srcIdx) {
@@ -560,9 +569,11 @@ function parseMatches(data, srcIdx) {
             const options = embedsData.map(e => {
                 const ea = e.attributes ?? e;
                 const rawUrl = ea.embed_iframe ?? ea.iframe ?? ea.url ?? ea.stream_url ?? '';
+                const { decoded, b64 } = getUrlAndB64(rawUrl);
                 return {
                     name: ea.embed_name ?? ea.name ?? ea.title ?? 'Ver stream',
-                    url:  decodeUrl(rawUrl)
+                    url:  decoded,
+                    b64:  b64
                 };
             }).filter(o => o.url && o.url !== '#');
 
@@ -660,8 +671,11 @@ function renderMatches() {
         let optionsHTML = '';
         if (match.options.length) {
             match.options.forEach(opt => {
+                const eventosUrl = opt.b64
+                    ? `embed/eventos.html?r=${encodeURIComponent(opt.b64)}`
+                    : opt.url;
                 optionsHTML += `
-                    <a class="stream-btn" href="${opt.url}" target="_blank" rel="noopener">
+                    <a class="stream-btn" href="${eventosUrl}" target="_blank" rel="noopener">
                         <span class="stream-icon">▶</span>
                         ${opt.name}
                     </a>`;
