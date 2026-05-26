@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Partidos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e0a;
+            --surface: #111711;
+            --surface2: #162016;
+            --green: #00e676;
+            --green-dim: #00c853;
+            --green-dark: #004d20;
+            --green-glow: rgba(0,230,118,0.15);
+            --text: #e8f5e9;
+            --text-dim: #81c784;
+            --accent: #69ff47;
+            --red: #ff1744;
+            --gold: #ffd600;
+            --border: rgba(0,230,118,0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 10% 0%, rgba(0,100,40,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 90% 100%, rgba(0,60,20,0.2) 0%, transparent 60%),
+                repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,230,118,0.03) 40px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,230,118,0.03) 40px);
+        }
+
+        /* ── HEADER ── */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,14,10,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 38px; height: 38px;
+            background: var(--green);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 18px rgba(0,230,118,0.5);
+            animation: pulse-logo 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-logo {
+            0%,100% { box-shadow: 0 0 18px rgba(0,230,118,0.5); }
+            50%      { box-shadow: 0 0 36px rgba(0,230,118,0.9); }
+        }
+
+        .logo-text {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            letter-spacing: 3px;
+            color: var(--green);
+            text-shadow: 0 0 20px rgba(0,230,118,0.4);
+        }
+
+        .logo-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,23,68,0.15);
+            border: 1px solid rgba(255,23,68,0.4);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--red);
+            letter-spacing: 2px;
+            animation: blink-live 2s ease-in-out infinite;
+        }
+
+        .live-dot {
+            width: 7px; height: 7px;
+            background: var(--red);
+            border-radius: 50%;
+        }
+
+        @keyframes blink-live {
+            0%,100% { opacity: 1; }
+            50%      { opacity: 0.5; }
+        }
+
+        #clock {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+
+        /* ── CONTAINER ── */
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        /* ── DATE STRIP ── */
+        .date-strip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .date-label {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 22px;
+            letter-spacing: 3px;
+            color: var(--green);
+        }
+
+        .date-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--green-dim), transparent);
+        }
+
+        #match-count {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        /* ── FILTER BAR ── */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 180px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .filter-input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
+        }
+
+        .filter-input::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+        /* ── SOURCE TABS ── */
+        .source-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .source-tab {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .source-tab.active, .source-tab:hover {
+            background: var(--green-glow);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        /* ── LOADING ── */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            gap: 20px;
+        }
+
+        .spinner-ring {
+            width: 56px; height: 56px;
+            border: 3px solid var(--surface2);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            animation: blink-live 1.5s ease-in-out infinite;
+        }
+
+        /* ── MATCH CARD ── */
+        .match-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+            cursor: pointer;
+            animation: card-in 0.4s ease both;
+        }
+
+        @keyframes card-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .match-card:hover {
+            border-color: var(--green);
+            box-shadow: 0 0 20px var(--green-glow), 0 4px 20px rgba(0,0,0,0.4);
+            transform: translateY(-2px);
+        }
+
+        .match-card.open {
+            border-color: var(--green);
+            box-shadow: 0 0 24px var(--green-glow);
+        }
+
+        .match-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            gap: 16px;
+        }
+
+        .time-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 58px;
+        }
+
+        .time-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 18px;
+            color: var(--green);
+            line-height: 1;
+            letter-spacing: 1px;
+        }
+
+        .time-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            margin-top: 2px;
+        }
+
+        .divider-vert {
+            width: 2px;
+            height: 36px;
+            background: linear-gradient(to bottom, transparent, var(--green-dim), transparent);
+            border-radius: 2px;
+        }
+
+        .match-info {
+            flex: 1;
+        }
+
+        .match-desc {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+            letter-spacing: 0.5px;
+        }
+
+        .match-source {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            margin-top: 3px;
+            opacity: 0.7;
+        }
+
+        .match-chevron {
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-dim);
+            transition: transform 0.25s, color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .match-card.open .match-chevron {
+            transform: rotate(90deg);
+            color: var(--green);
+        }
+
+        /* ── OPTIONS PANEL ── */
+        .match-options {
+            display: none;
+            padding: 0 18px 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .match-card.open .match-options {
+            display: flex;
+        }
+
+        .stream-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--green-dark), #003d18);
+            border: 1px solid var(--green-dim);
+            color: var(--accent);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stream-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,230,118,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .stream-btn:hover {
+            background: linear-gradient(135deg, #005a25, #004d20);
+            border-color: var(--green);
+            color: #fff;
+            box-shadow: 0 0 16px rgba(0,230,118,0.3);
+            transform: translateY(-2px);
+        }
+
+        .stream-btn:hover::before { opacity: 1; }
+
+        .stream-icon { font-size: 13px; }
+
+        /* ── EMPTY / ERROR ── */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+
+        .empty-text {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 22px;
+            letter-spacing: 3px;
+            color: var(--text-dim);
+        }
+
+        /* ── SOURCE BADGE ── */
+        .src-badge {
+            display: inline-block;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+        .src-0 { background: rgba(0,150,255,0.1); color: #4fc3f7; border: 1px solid rgba(79,195,247,0.3); }
+        .src-1 { background: rgba(255,193,7,0.1);  color: var(--gold); border: 1px solid rgba(255,214,0,0.3); }
+        .src-2 { background: rgba(0,230,118,0.1);  color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+        .src-3 { background: rgba(255,87,34,0.1);  color: #ff7043; border: 1px solid rgba(255,112,67,0.3); }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+
+        @media (max-width: 600px) {
+            .logo-text { font-size: 22px; }
+            .match-desc { font-size: 15px; }
+            .header { padding: 10px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo-area">
+        <div class="logo-icon">⚽</div>
+        <div>
+            <div class="logo-text">AGENDA</div>
+            <div class="logo-sub">PARTIDOS EN VIVO</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="live-badge">
+            <div class="live-dot"></div>
+            EN VIVO
+        </div>
+        <div id="clock">00:00:00</div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="date-strip">
+        <div class="date-label" id="date-label">HOY</div>
+        <div class="date-line"></div>
+        <div id="match-count">CARGANDO...</div>
+    </div>
+
+    <div class="filter-bar">
+        <input class="filter-input" type="text" id="search-input" placeholder="🔍  Buscar partido o equipo...">
+    </div>
+
+    <div class="source-tabs" id="source-tabs">
+        <button class="source-tab active" data-src="all">TODOS</button>
+    </div>
+
+    <div id="matches">
+        <div class="loading-screen">
+            <div class="spinner-ring"></div>
+            <div class="loading-text">CARGANDO PARTIDOS...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const SOURCES = [
+    { label: "PLTV",     url: "https://pltvhd.com/diaries.json",          cls: "src-0" },
+    { label: "GOOLHD",   url: "https://goolhd.com/agenda.json",            cls: "src-1" },
+    { label: "FUBOLAZO", url: "https://fubolazo.com/agenda.json?v=1.07",   cls: "src-2" },
+    { label: "GOLAZO",   url: "https://golazoplay.com/agenda.json",        cls: "src-3" },
+];
+
+const TZ_OFFSET = 2; // +2h adjustment
+
+// ── CLOCK ──────────────────────────────────────────────────
+function updateClock() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2,'0');
+    const m = now.getMinutes().toString().padStart(2,'0');
+    const s = now.getSeconds().toString().padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// date label
+const today = new Date();
+document.getElementById('date-label').textContent =
+    today.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' }).toUpperCase();
+
+// ── HELPERS ────────────────────────────────────────────────
+function adjustTime(time) {
+    if (!time) return null;
+    const parts = time.split(":").map(Number);
+    const h = parts[0], m = parts[1] ?? 0, s = parts[2] ?? 0;
+    const adj = h + TZ_OFFSET;
+    if (adj >= 24) return null;
+    return `${adj.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function decodeUrl(raw) {
+    if (!raw) return '#';
+    try {
+        // try as iframe src with ?r= param
+        const u = new URL(raw, 'https://example.com');
+        const r = u.searchParams.get('r');
+        if (r) return atob(r);
+    } catch {}
+    // maybe already a direct url
+    if (raw.startsWith('http')) return raw;
+    // maybe base64
+    try { const d = atob(raw); if (d.startsWith('http')) return d; } catch {}
+    return raw;
+}
+
+function parseMatches(data, srcIdx) {
+    const matches = [];
+    let items = [];
+
+    // normalise different API shapes
+    if (Array.isArray(data)) items = data;
+    else if (data.data && Array.isArray(data.data)) items = data.data;
+    else if (data.matches) items = data.matches;
+    else if (data.events) items = data.events;
+
+    for (const item of items) {
+        try {
+            const attrs = item.attributes ?? item;
+
+            const rawTime = attrs.diary_hour ?? attrs.hour ?? attrs.time ?? attrs.start_time ?? '';
+            const desc    = (attrs.diary_description ?? attrs.description ?? attrs.title ?? attrs.name ?? '').trim();
+            const embedsData = attrs.embeds?.data ?? attrs.embeds ?? attrs.streams ?? attrs.channels ?? [];
+
+            const time = adjustTime(rawTime);
+            if (!time || !desc) continue;
+
+            const options = embedsData.map(e => {
+                const ea = e.attributes ?? e;
+                const rawUrl = ea.embed_iframe ?? ea.iframe ?? ea.url ?? ea.stream_url ?? '';
+                return {
+                    name: ea.embed_name ?? ea.name ?? ea.title ?? 'Ver stream',
+                    url:  decodeUrl(rawUrl)
+                };
+            }).filter(o => o.url && o.url !== '#');
+
+            matches.push({ time, desc, options, srcIdx });
+        } catch {}
+    }
+    return matches;
+}
+
+// ── FETCH ALL SOURCES ──────────────────────────────────────
+async function fetchAll() {
+    const results = await Promise.allSettled(
+        SOURCES.map(src =>
+            fetch(src.url)
+                .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+        )
+    );
+
+    const allMatches = [];
+    results.forEach((res, idx) => {
+        if (res.status === 'fulfilled') {
+            allMatches.push(...parseMatches(res.value, idx));
+        }
+    });
+
+    // dedup by time+description
+    const seen = new Set();
+    const deduped = allMatches.filter(m => {
+        const key = `${m.time}|${m.desc.toLowerCase()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    deduped.sort((a, b) => a.time.localeCompare(b.time));
+    return deduped;
+}
+
+// ── RENDER ─────────────────────────────────────────────────
+let allMatches = [];
+let activeSource = 'all';
+let searchQuery  = '';
+
+function renderSourceTabs(matches) {
+    const tabsEl = document.getElementById('source-tabs');
+    const usedSrcs = [...new Set(matches.map(m => m.srcIdx))];
+
+    tabsEl.innerHTML = '<button class="source-tab active" data-src="all">TODOS</button>';
+    usedSrcs.forEach(idx => {
+        const btn = document.createElement('button');
+        btn.className = 'source-tab';
+        btn.dataset.src = idx;
+        btn.textContent = SOURCES[idx].label;
+        tabsEl.appendChild(btn);
+    });
+
+    tabsEl.querySelectorAll('.source-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            activeSource = btn.dataset.src;
+            tabsEl.querySelectorAll('.source-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMatches();
+        });
+    });
+}
+
+function renderMatches() {
+    const container = document.getElementById('matches');
+    const countEl   = document.getElementById('match-count');
+
+    let filtered = allMatches;
+    if (activeSource !== 'all') filtered = filtered.filter(m => m.srcIdx == activeSource);
+    if (searchQuery)             filtered = filtered.filter(m => m.desc.toLowerCase().includes(searchQuery));
+
+    countEl.textContent = `${filtered.length} PARTIDO${filtered.length !== 1 ? 'S' : ''}`;
+
+    if (!filtered.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">SIN PARTIDOS DISPONIBLES</div>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = '';
+
+    filtered.forEach((match, i) => {
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        card.style.animationDelay = `${i * 40}ms`;
+
+        const src = SOURCES[match.srcIdx];
+
+        let optionsHTML = '';
+        if (match.options.length) {
+            match.options.forEach(opt => {
+                optionsHTML += `
+                    <a class="stream-btn" href="${opt.url}" target="_blank" rel="noopener">
+                        <span class="stream-icon">▶</span>
+                        ${opt.name}
+                    </a>`;
+            });
+        } else {
+            optionsHTML = `<span style="color:var(--text-dim);font-size:13px;font-family:'Share Tech Mono',monospace">Sin streams disponibles</span>`;
+        }
+
+        card.innerHTML = `
+            <div class="match-header">
+                <div class="time-block">
+                    <span class="time-value">${match.time.substring(0,5)}</span>
+                    <span class="time-label">HORA</span>
+                </div>
+                <div class="divider-vert"></div>
+                <div class="match-info">
+                    <div class="match-desc">${match.desc}</div>
+                    <span class="src-badge ${src.cls}">${src.label}</span>
+                </div>
+                <div class="match-chevron">▶</div>
+            </div>
+            <div class="match-options">${optionsHTML}</div>
+        `;
+
+        card.addEventListener('click', e => {
+            if (e.target.closest('.stream-btn')) return; // don't toggle when clicking button
+            card.classList.toggle('open');
+        });
+
+        container.appendChild(card);
+    });
+}
+
+// ── SEARCH ─────────────────────────────────────────────────
+document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value.trim().toLowerCase();
+    renderMatches();
+});
+
+// ── INIT ───────────────────────────────────────────────────
+(async () => {
+    try {
+        allMatches = await fetchAll();
+        renderSourceTabs(allMatches);
+        renderMatches();
+    } catch (err) {
+        document.getElementById('matches').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">⚠️</div>
+                <div class="empty-text">ERROR AL CARGAR PARTIDOS</div>
+            </div>`;
+    }
+})();
+</script>
+</body>
+</html>
