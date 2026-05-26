@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stream • Golazo Cubano</title>
+  <title>Stream • jjfutbol </title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -51,7 +51,7 @@
       overflow: hidden;
     }
 
-    /* Cuban star / stripe decorations */
+    /*  star / stripe decorations */
     .cu-stripe {
       position: absolute;
       left: 0; right: 0;
@@ -328,21 +328,9 @@
 
       if (!decoded.startsWith('http')) throw new Error('invalid url');
 
-      // If it's an iframe-able source (m3u8 / known players)
-      // we embed; otherwise we redirect to avoid CORS issues
-      const iframeHosts = ['youtube.com', 'youtu.be', 'twitch.tv', 'dailymotion.com',
-                           'ok.ru', 'vk.com', 'streamtp', 'embedstream', 'golazoplay',
-                           'pltvhd', 'goolhd', 'fubolazo'];
+      // Siempre embeber en iframe — nunca redirigir al canal directamente
+      loadUrl(decoded);
 
-      const shouldEmbed = iframeHosts.some(h => decoded.includes(h));
-
-      if (shouldEmbed) {
-        loadUrl(decoded);
-      } else {
-        // redirect approach — works for direct stream pages
-        loading.style.display = 'flex';
-        setTimeout(() => { window.location.href = decoded; }, 800);
-      }
     } catch (e) {
       showError();
     }
